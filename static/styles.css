@@ -1,0 +1,233 @@
+:root {
+  color-scheme: light dark;
+  font-family: "Segoe UI", "Hiragino Kaku Gothic ProN", "BIZ UDPGothic", sans-serif;
+  line-height: 1.6;
+  --accent: #2d7ff9;
+  --bg: #f5f7fb;
+  --bg-dark: #10131a;
+  --card-bg: rgba(255, 255, 255, 0.8);
+  --border: rgba(0, 0, 0, 0.12);
+  --border-dark: rgba(255, 255, 255, 0.2);
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: #1b1b1b;
+  min-height: 100vh;
+}
+
+@media (prefers-color-scheme: dark) {
+  body {
+    background: var(--bg-dark);
+    color: #e6e9ef;
+  }
+}
+
+.container {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 2.5rem 1.5rem 3rem;
+}
+
+header {
+  margin-bottom: 2rem;
+}
+
+h1 {
+  font-size: clamp(2rem, 4vw, 2.6rem);
+  margin-bottom: 0.5rem;
+}
+
+p {
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.form-section,
+.table-section,
+.chart-section {
+  background: var(--card-bg);
+  border-radius: 16px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.1);
+  backdrop-filter: blur(6px);
+  border: 1px solid var(--border);
+}
+
+@media (prefers-color-scheme: dark) {
+  .form-section,
+  .table-section,
+  .chart-section {
+    border-color: var(--border-dark);
+    background: rgba(17, 25, 40, 0.75);
+  }
+}
+
+.form-section form {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.form-controls {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+input[type="number"] {
+  flex: 1 1 200px;
+  padding: 0.6rem 0.75rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  font-size: 1rem;
+  background: rgba(255, 255, 255, 0.9);
+}
+
+@media (prefers-color-scheme: dark) {
+  input[type="number"] {
+    background: rgba(15, 23, 42, 0.8);
+    color: inherit;
+    border-color: var(--border-dark);
+  }
+}
+
+button {
+  padding: 0.6rem 1.25rem;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: transform 120ms ease, box-shadow 120ms ease;
+}
+
+button:hover,
+button:focus-visible {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 20px rgba(45, 127, 249, 0.25);
+}
+
+.feedback {
+  margin-top: 0.5rem;
+  font-size: 0.95rem;
+}
+
+.feedback.error {
+  color: #d93025;
+}
+
+.feedback.success {
+  color: #15803d;
+}
+
+.feedback.warning {
+  color: #b45309;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+table th,
+table td {
+  padding: 0.65rem 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+
+@media (prefers-color-scheme: dark) {
+  table th,
+  table td {
+    border-color: var(--border-dark);
+  }
+}
+
+table tbody tr:nth-child(even) {
+  background: rgba(45, 127, 249, 0.05);
+}
+
+@media (prefers-color-scheme: dark) {
+  table tbody tr:nth-child(even) {
+    background: rgba(45, 127, 249, 0.08);
+  }
+}
+
+.chart-section {
+  display: grid;
+  gap: 1rem;
+}
+
+.chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.5rem;
+  min-height: 220px;
+  padding: 1rem;
+  border: 1px dashed var(--border);
+  border-radius: 12px;
+  overflow-x: auto;
+}
+
+@media (prefers-color-scheme: dark) {
+  .chart {
+    border-color: var(--border-dark);
+  }
+}
+
+.chart-bar {
+  position: relative;
+  width: 42px;
+  background: linear-gradient(180deg, rgba(45, 127, 249, 0.9), rgba(45, 127, 249, 0.5));
+  border-radius: 8px 8px 4px 4px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  transition: transform 120ms ease;
+}
+
+.chart-bar:hover {
+  transform: translateY(-4px);
+}
+
+.chart-value {
+  position: absolute;
+  top: -1.75rem;
+  font-size: 0.85rem;
+}
+
+.chart-step {
+  position: absolute;
+  bottom: -1.6rem;
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.chart-caption {
+  font-size: 0.9rem;
+  color: rgba(17, 24, 39, 0.75);
+}
+
+@media (prefers-color-scheme: dark) {
+  .chart-caption {
+    color: rgba(226, 232, 240, 0.75);
+  }
+}
+
+@media (max-width: 600px) {
+  button {
+    width: 100%;
+  }
+
+  .chart {
+    min-height: 180px;
+  }
+}

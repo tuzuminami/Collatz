@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Collatz 数列ビジュアライザー</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
+  </head>
+  <body>
+    <main class="container">
+      <header>
+        <h1>Collatz 数列ビジュアライザー</h1>
+        <p>
+          正の整数を入力すると、Collatz 数列の過程をステップごとに表示します。
+          各ステップでは実行された計算と結果の値を確認できます。
+        </p>
+      </header>
+
+      <section class="form-section">
+        <form method="post" novalidate>
+          <label for="number">開始する整数</label>
+          <div class="form-controls">
+            <input
+              type="number"
+              id="number"
+              name="number"
+              min="1"
+              step="1"
+              required
+              value="{{ number_input }}"
+              placeholder="例: 7"
+            />
+            <button type="submit">計算する</button>
+          </div>
+        </form>
+        {% if error_message %}
+        <p class="feedback error">{{ error_message }}</p>
+        {% elif steps %}
+        <p class="feedback success">
+          計算したステップ数: {{ steps|length - 1 }} （開始値を含めた合計 {{ steps|length }} 件）
+        </p>
+        {% endif %}
+        {% if truncated %}
+        <p class="feedback warning">
+          上限 {{ max_steps }} ステップに達したため途中で停止しました。
+        </p>
+        {% endif %}
+      </section>
+
+      {% if steps %}
+      <section class="table-section">
+        <h2>手順の詳細</h2>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">ステップ</th>
+                <th scope="col">値</th>
+                <th scope="col">操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for row in steps %}
+              <tr>
+                <td data-label="ステップ">{{ row.step }}</td>
+                <td data-label="値">{{ row.value }}</td>
+                <td data-label="操作">{{ row.operation }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="chart-section" aria-label="数列の推移">
+        <h2>数列の推移を視覚化</h2>
+        <p class="chart-caption">
+          棒の高さは各ステップの値の相対的な大きさを表しています。
+        </p>
+        <div class="chart" role="img">
+          {% for row in steps %}
+          <div class="chart-bar" style="height: {{ ((row.value / max_value) * 100)|round(0) }}%">
+            <span class="chart-value">{{ row.value }}</span>
+            <span class="chart-step">#{{ row.step }}</span>
+          </div>
+          {% endfor %}
+        </div>
+      </section>
+      {% endif %}
+    </main>
+  </body>
+</html>
