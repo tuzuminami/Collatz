@@ -17,7 +17,7 @@
       </header>
 
       <section class="form-section">
-        <form method="post" novalidate>
+        <form id="collatz-form" method="post" novalidate>
           <label for="number">開始する整数</label>
           <div class="form-controls">
             <input
@@ -27,28 +27,33 @@
               min="1"
               step="1"
               required
-              value="{{ number_input }}"
+              value=""
               placeholder="例: 7"
             />
             <button type="submit">計算する</button>
           </div>
         </form>
-        {% if error_message %}
-        <p class="feedback error">{{ error_message }}</p>
-        {% elif steps %}
-        <p class="feedback success">
-          計算したステップ数: {{ steps|length - 1 }} （開始値を含めた合計 {{ steps|length }} 件）
-        </p>
-        {% endif %}
-        {% if truncated %}
-        <p class="feedback warning">
-          上限 {{ max_steps }} ステップに達したため途中で停止しました。
-        </p>
-        {% endif %}
+        <p
+          class="feedback error"
+          id="error-message"
+          hidden
+          aria-live="assertive"
+        ></p>
+        <p
+          class="feedback success"
+          id="success-message"
+          hidden
+          aria-live="polite"
+        ></p>
+        <p
+          class="feedback warning"
+          id="warning-message"
+          hidden
+          aria-live="polite"
+        ></p>
       </section>
 
-      {% if steps %}
-      <section class="table-section">
+      <section class="table-section" id="table-section" hidden>
         <h2>手順の詳細</h2>
         <div class="table-wrapper">
           <table>
@@ -59,34 +64,27 @@
                 <th scope="col">操作</th>
               </tr>
             </thead>
-            <tbody>
-              {% for row in steps %}
-              <tr>
-                <td data-label="ステップ">{{ row.step }}</td>
-                <td data-label="値">{{ row.value }}</td>
-                <td data-label="操作">{{ row.operation }}</td>
-              </tr>
-              {% endfor %}
-            </tbody>
+            <tbody id="sequence-body"></tbody>
           </table>
         </div>
       </section>
 
-      <section class="chart-section" aria-label="数列の推移">
+      <section
+        class="chart-section"
+        aria-label="数列の推移"
+        id="chart-section"
+        hidden
+      >
         <h2>数列の推移を視覚化</h2>
         <p class="chart-caption">
           棒の高さは各ステップの値の相対的な大きさを表しています。
         </p>
-        <div class="chart" role="img">
-          {% for row in steps %}
-          <div class="chart-bar" style="height: {{ ((row.value / max_value) * 100)|round(0) }}%">
-            <span class="chart-value">{{ row.value }}</span>
-            <span class="chart-step">#{{ row.step }}</span>
-          </div>
-          {% endfor %}
-        </div>
+        <div class="chart" role="img" id="chart"></div>
       </section>
-      {% endif %}
     </main>
+    <script>
+      window.CollatzConfig = { maxSteps: {{ max_steps }} };
+    </script>
+    <script src="{{ url_for('static', filename='app.js') }}" defer></script>
   </body>
 </html>

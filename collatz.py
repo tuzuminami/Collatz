@@ -4,7 +4,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import List, Tuple
 
-from flask import Flask, render_template, request
+from flask import Flask, jsonify, render_template, request
 
 app = Flask(__name__)
 
@@ -59,32 +59,33 @@ def collatz_sequence(start: int, *, max_steps: int = MAX_STEPS) -> Tuple[List[Co
 
 @app.route("/", methods=["GET", "POST"])
 def index():
-    number_input = ""
-    steps: List[CollatzStep] | None = None
-    error_message: str | None = None
-    truncated = False
+    return render_template("index.html", max_steps=MAX_STEPS)
 
-    if request.method == "POST":
-        number_input = request.form.get("number", "").strip()
-        if not number_input:
-            error_message = "値を入力してください。"
-        else:
-            try:
-                number = int(number_input)
-                steps, truncated = collatz_sequence(number)
-            except ValueError:
-                error_message = "1 以上の整数を入力してください。"
 
-    max_value = max((step.value for step in steps), default=None) if steps else None
+@app.post("/api/collatz")
+def collatz_api():
+    payload = request.get_json(silent=True) or {}
+    raw_number = payload.get("number")
 
-    return render_template(
-        "index.html",
-        number_input=number_input,
-        steps=steps,
-        truncated=truncated,
-        max_value=max_value,
-        max_steps=MAX_STEPS,
-        error_message=error_message,
+    try:
+        number = int(raw_number)
+    except (TypeError, ValueError):
+        return jsonify({"error": "1 以上の整数を入力してください。"}), 400
+
+    try:
+        steps, truncated = collatz_sequence(number)
+    except ValueError:
+        return jsonify({"error": "1 以上の整数を入力してください。"}), 400
+
+    return jsonify(
+        {
+            "steps": [
+                {"step": step.step, "value": step.value, "operation": step.operation}
+                for step in steps
+            ],
+            "truncated": truncated,
+            "max_steps": MAX_STEPS,
+        }
     )
 
 
