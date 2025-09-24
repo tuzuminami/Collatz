@@ -111,6 +111,13 @@ button:focus-visible {
   box-shadow: 0 10px 20px rgba(45, 127, 249, 0.25);
 }
 
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+
 .feedback {
   margin-top: 0.5rem;
   font-size: 0.95rem;
