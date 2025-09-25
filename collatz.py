@@ -6,7 +6,7 @@ import errno
 import os
 from dataclasses import dataclass
 from pathlib import Path
-from typing import List, Tuple
+from typing import Any
 
 from flask import Flask, jsonify, render_template, request
 
@@ -19,9 +19,10 @@ app = Flask(
 )
 
 MAX_STEPS = 1000
+INVALID_INPUT_MESSAGE = "1 以上の整数を入力してください。"
 
 
-@dataclass
+@dataclass(slots=True)
 class CollatzStep:
     """Represents a single step in the Collatz sequence."""
 
@@ -29,8 +30,30 @@ class CollatzStep:
     value: int
     operation: str
 
+    def to_dict(self) -> dict[str, int | str]:
+        """Return the step as a JSON-serialisable dictionary."""
 
-def collatz_sequence(start: int, *, max_steps: int = MAX_STEPS) -> Tuple[List[CollatzStep], bool]:
+        return {"step": self.step, "value": self.value, "operation": self.operation}
+
+
+@dataclass(slots=True)
+class CollatzResult:
+    """Container for the computed Collatz sequence."""
+
+    steps: list[CollatzStep]
+    truncated: bool
+
+    def to_response_payload(self, *, max_steps: int) -> dict[str, Any]:
+        """Convert the result to a payload suited for the API response."""
+
+        return {
+            "steps": [step.to_dict() for step in self.steps],
+            "truncated": self.truncated,
+            "max_steps": max_steps,
+        }
+
+
+def collatz_sequence(start: int, *, max_steps: int = MAX_STEPS) -> CollatzResult:
     """Generate the Collatz sequence for ``start``.
 
     Args:
@@ -38,38 +61,60 @@ def collatz_sequence(start: int, *, max_steps: int = MAX_STEPS) -> Tuple[List[Co
         max_steps: Maximum number of operations to perform to avoid infinite loops.
 
     Returns:
-        A tuple of ``(steps, truncated)``. ``steps`` contains the detailed progression
-        from the starting value to 1 (or until the maximum number of steps is reached).
-        ``truncated`` is ``True`` when the computation stopped because ``max_steps`` was
-        exceeded.
+        A :class:`CollatzResult` instance containing the detailed progression from the
+        starting value to 1 (or until the maximum number of steps is reached).
+
+    Raises:
+        ValueError: If ``start`` is not a positive integer.
     """
 
     if start <= 0:
         raise ValueError("start must be a positive integer")
 
-    steps: List[CollatzStep] = [CollatzStep(step=0, value=start, operation="開始値")]
+    steps: list[CollatzStep] = [CollatzStep(step=0, value=start, operation="開始値")]
     current = start
-    step_index = 0
 
-    while current != 1 and step_index < max_steps:
-        if current % 2 == 0:
+    for step_index in range(1, max_steps + 1):
+        if current == 1:
+            break
+
+        is_even = current % 2 == 0
+        if is_even:
             next_value = current // 2
             operation = f"{current} は偶数なので 2 で割って {next_value}"
         else:
             next_value = current * 3 + 1
             operation = f"{current} は奇数なので 3×{current} + 1 = {next_value}"
 
-        step_index += 1
         current = next_value
         steps.append(CollatzStep(step=step_index, value=current, operation=operation))
 
     truncated = current != 1
-    return steps, truncated
+    return CollatzResult(steps=steps, truncated=truncated)
 
 
 @app.route("/", methods=["GET", "POST"])
 def index():
     return render_template("index.html", max_steps=MAX_STEPS)
+
+
+def _json_error(message: str, status_code: int = 400):
+    """Return a Flask JSON response with the given error message."""
+
+    return jsonify({"error": message}), status_code
+
+
+def _parse_positive_int(value: Any) -> int:
+    """Parse ``value`` into a positive integer.
+
+    Raises:
+        ValueError: If ``value`` cannot be parsed into a positive integer.
+    """
+
+    number = int(value)
+    if number < 1:
+        raise ValueError
+    return number
 
 
 @app.post("/api/collatz")
@@ -78,25 +123,16 @@ def collatz_api():
     raw_number = payload.get("number")
 
     try:
-        number = int(raw_number)
+        number = _parse_positive_int(raw_number)
     except (TypeError, ValueError):
-        return jsonify({"error": "1 以上の整数を入力してください。"}), 400
+        return _json_error(INVALID_INPUT_MESSAGE)
 
     try:
-        steps, truncated = collatz_sequence(number)
+        result = collatz_sequence(number)
     except ValueError:
-        return jsonify({"error": "1 以上の整数を入力してください。"}), 400
+        return _json_error(INVALID_INPUT_MESSAGE)
 
-    return jsonify(
-        {
-            "steps": [
-                {"step": step.step, "value": step.value, "operation": step.operation}
-                for step in steps
-            ],
-            "truncated": truncated,
-            "max_steps": MAX_STEPS,
-        }
-    )
+    return jsonify(result.to_response_payload(max_steps=MAX_STEPS))
 def parse_args() -> argparse.Namespace:
     """Parse command line arguments for configuring the Flask server."""
 
