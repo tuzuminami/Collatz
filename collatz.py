@@ -5,11 +5,18 @@ import argparse
 import errno
 import os
 from dataclasses import dataclass
+from pathlib import Path
 from typing import List, Tuple
 
 from flask import Flask, jsonify, render_template, request
 
-app = Flask(__name__)
+BASE_DIR = Path(__file__).resolve().parent
+
+app = Flask(
+    __name__,
+    template_folder=str(BASE_DIR / "templates"),
+    static_folder=str(BASE_DIR / "static"),
+)
 
 MAX_STEPS = 1000
 
