@@ -34,7 +34,7 @@ Flask を利用したシンプルな Web アプリケーションです。正の
      1. ターミナルで以下のコマンドを入力します（URL は必要に応じて置き換えてください）。
 
         ```bash
-        git clone https://github.com/ユーザー名/Collatz.git
+        git clone https://github.com/tuzuminami/Collatz.git
         ```
 
     2. クローンが完了すると、実行した場所に `Collatz` フォルダが作成されます。
