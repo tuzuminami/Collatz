@@ -1,6 +1,9 @@
 """Simple Flask backend for visualizing the Collatz sequence."""
 from __future__ import annotations
 
+import argparse
+import errno
+import os
 from dataclasses import dataclass
 from typing import List, Tuple
 
@@ -87,7 +90,53 @@ def collatz_api():
             "max_steps": MAX_STEPS,
         }
     )
+def parse_args() -> argparse.Namespace:
+    """Parse command line arguments for configuring the Flask server."""
+
+    parser = argparse.ArgumentParser(description="Collatz 可視化アプリのサーバーを起動します。")
+    parser.add_argument(
+        "--host",
+        default=os.getenv("HOST", "0.0.0.0"),
+        help="待ち受けるホスト名。デフォルトは 0.0.0.0 です。",
+    )
+    parser.add_argument(
+        "--port",
+        type=int,
+        default=int(os.getenv("PORT", "5000")),
+        help="使用するポート番号。デフォルトは 5000 です。",
+    )
+    parser.add_argument(
+        "--debug",
+        dest="debug",
+        action="store_true",
+        help="Flask のデバッグモードを有効にします (デフォルト)。",
+    )
+    parser.add_argument(
+        "--no-debug",
+        dest="debug",
+        action="store_false",
+        help="Flask のデバッグモードを無効にします。",
+    )
+    parser.set_defaults(debug=True)
+    return parser.parse_args()
+
+
+def main() -> None:
+    """Entrypoint for running the Flask development server."""
+
+    args = parse_args()
+
+    try:
+        app.run(host=args.host, port=args.port, debug=args.debug)
+    except OSError as exc:  # pragma: no cover - depends on environment
+        if exc.errno == errno.EADDRINUSE:
+            print(
+                f"Port {args.port} is already in use. "
+                "Specify a different port with --port or the PORT environment variable."
+            )
+            raise SystemExit(1) from exc
+        raise
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    main()
